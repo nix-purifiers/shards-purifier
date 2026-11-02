@@ -1,0 +1,5 @@
+version: "2.0"
+shards:
+  "db":
+    git: "https://github.com/crystal-lang/crystal-db.git"
+    version: "0.15.0+git.commit.ec7b045b3e2cf5962c029bf676f238f812f40872"

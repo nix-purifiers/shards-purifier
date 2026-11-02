@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.log
+result
+cli-native
+.shards-purifier/
+.crystal/
+/lib/
+/bin/hello
+examples/minimal/bin/
+examples/minimal/lib/

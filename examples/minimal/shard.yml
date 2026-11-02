@@ -1,0 +1,9 @@
+name: locked_crystal
+version: 0.1.0
+dependencies:
+  db:
+    github: crystal-lang/crystal-db
+    version: ~> 0.15.0
+targets:
+  hello:
+    main: src/main.cr
