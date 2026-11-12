@@ -43,11 +43,11 @@
               final.patch
             ];
           };
-          cli = scope.callPackage ./nix/cli.nix {
+          cli = scope.callPackage ./pkgs/shards-purifier/default.nix {
             nixpkgsSrc = nixpkgs;
             purifierSrc = purifier;
           };
-          buildShardsProject = scope.callPackage ./nix/build-project.nix { purifier = shared final.lib; };
+          buildShardsProject = scope.callPackage ./pkgs/build-shards-project/default.nix { purifier = shared final.lib; };
         });
       };
       pkgsFor =
@@ -59,7 +59,7 @@
     in
     {
       overlays.default = overlay;
-      lib.shards-purifier.readLock = import ./nix/read-lock.nix { lib = nixpkgs.lib; };
+      lib.shards-purifier = import ./lib-overlays/default { lib = nixpkgs.lib; };
       packages = forAll (system: {
         default = (pkgsFor system).shards-purifier.cli;
         cli = self.packages.${system}.default;

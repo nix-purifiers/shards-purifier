@@ -54,7 +54,7 @@ runCommand "purified-shards-environment"
     mkdir -p "$HOME" "$out/lib" "$out/bin" project
     ln -s ${sources}/sources "$out/sources"
     ln -s ${metadata} "$out/metadata.json"
-    python3 ${../shards_purifier/prepare.py} ${metadata} ${sources}/sources "$SHARDS_CACHE_PATH"
+    python3 ${../../shards_purifier/prepare.py} ${metadata} ${sources}/sources "$SHARDS_CACHE_PATH"
     cd project
     cp ${manifest} shard.yml
     cp ${nativeLock} shard.lock

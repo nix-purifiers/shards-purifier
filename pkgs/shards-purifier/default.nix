@@ -20,12 +20,12 @@ in
 stdenvNoCC.mkDerivation {
   pname = "shards-purifier";
   version = "0.1.0";
-  src = ../.;
+  src = ../..;
   nativeBuildInputs = [ makeWrapper ];
   dontBuild = true;
   installPhase = ''
     mkdir -p "$out/bin" "$out/lib/shards-purifier"
-    cp -r shards_purifier nix "$out/lib/shards-purifier/"
+    cp -r shards_purifier nix lib-overlays pkgs "$out/lib/shards-purifier/"
     install -m755 bin/shards-purifier "$out/bin/shards-purifier"
     substituteInPlace "$out/lib/shards-purifier/nix/realize.nix" \
       --replace-fail '@nixpkgs@' '${nixpkgsSrc}' \
