@@ -35,13 +35,13 @@ let
     lockFile = /. + lockFile;
     shardLock = /. + shardLock;
   };
-  lock = import ./read-lock.nix { inherit (pkgs) lib; } args;
+  lock = import ../lib-overlays/default/read-lock.nix { inherit (pkgs) lib; } args;
 in
 if target == "environment" then
-  pkgs.callPackage ./environment.nix { inherit purifier nativeShards toolchain; } { inherit lock; }
+  pkgs.callPackage ../pkgs/build-shards-project/environment.nix { inherit purifier nativeShards toolchain; } { inherit lock; }
 else if target == "runtime" then
   pkgs.runCommand "shards-purifier-runtime" { } ''ln -s @runtime@ "$out"''
 else if target == "release" then
-  (pkgs.callPackage ./build-project.nix { inherit purifier nativeShards toolchain; } args).release
+  (pkgs.callPackage ../pkgs/build-shards-project/default.nix { inherit purifier nativeShards toolchain; } args).release
 else
   throw "shards-purifier: unknown realization target ${target}"

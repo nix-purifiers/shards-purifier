@@ -33,7 +33,7 @@
 }:
 let
   lock = purifier.checkLock (
-    import ./read-lock.nix { inherit lib; } { inherit src lockFile shardLock; }
+    import ../../lib-overlays/default/read-lock.nix { inherit lib; } { inherit src lockFile shardLock; }
   );
   environment = import ./environment.nix {
     inherit
