@@ -53,7 +53,7 @@ for case, message in expected.items():
             foreign.write_text("module ForeignOwned; end\n")
             for folder in (original, staged):
                 source = folder / spec["source"]
-                source.write_text("require " + json.dumps(str(foreign)) + "\n" + source.read_text())
+                source.write_text('require "../../foreign"\n' + source.read_text())
         elif case == "shadowed-prelude":
             copied = root / "environment"
             shutil.copytree(environment, copied, symlinks=True)
