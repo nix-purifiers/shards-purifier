@@ -83,7 +83,7 @@ for name, spec in specs.items():
     native_build = run(command)
     (support / (name + "-build.txt")).write_text(native_build)
     elf = library.read_bytes()
-    assert elf[:4] == b"\x7fELF" and struct.unpack_from("<" if elf[5] == 1 else ">", elf, 18)[0] == {
+    assert elf[:4] == b"\x7fELF" and struct.unpack_from("<H" if elf[5] == 1 else ">H", elf, 18)[0] == {
         "x86_64-linux": 62, "aarch64-linux": 183
     }[system], "Foreign native library architecture"
     symbols = run([nm, "-D", "--defined-only", library])
