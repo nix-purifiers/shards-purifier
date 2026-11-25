@@ -124,6 +124,7 @@ post_build = {relative: sha(project / relative) if (project / relative).is_file(
 (support / "verified-libraries.json").write_text(json.dumps({
     "libraries": records, "authoredInputs": authored, "postBuildInputs": post_build,
     "nativeCompilerPath": compiler, "sdkRoots": list(map(str, sdk_roots)),
+    "dependencyEnvironment": str(environment),
     "selectedGcRoot": selected_gc, "nativeTools": {"nm": nm, "cc": cc, "ldd": ldd,
                                                    "compilerExecutable": selected_compiler}
 }, indent=2, sort_keys=True) + "\n")
