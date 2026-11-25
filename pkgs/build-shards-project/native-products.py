@@ -91,6 +91,7 @@ for name, spec in specs.items():
                 if len(parts := line.split()) >= 3 and parts[-2] in ("T", "W")}
     assert set(spec["exports"]).issubset(exported), "Missing callable authored native export"
     linked_libraries = run([ldd, library])
+    print("Native Crystal runtime loader observation:\n" + linked_libraries, file=sys.stderr)
     assert "not found" not in linked_libraries, "Unresolved native runtime dependency"
     linked = {}
     for line in linked_libraries.splitlines():
@@ -115,7 +116,6 @@ for name, spec in specs.items():
                      "header": str(installed_header), "headerSha256": sha(installed_header),
                      "dynamicSymbols": symbols,
                      "linkedLibraries": linked,
-                     "nativeLinkerOutput": linked_libraries,
                      "dynamicSection": run([Path(nm).parent / "readelf", "-d", library])}
 authored = {str(path.relative_to(original)): sha(path)
             for path in sorted(original.rglob("*")) if path.is_file()}
