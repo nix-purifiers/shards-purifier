@@ -1,0 +1,47 @@
+{
+  "contentHash": "f45e98078465665fa59fa3b5f1b0342c3525ec3bebad5ce48f788f5ffcf34147",
+  "dependencies": [
+    {
+      "aliases": [
+        "refs/heads/master",
+        "refs/tags/v0.15.0"
+      ],
+      "cachePath": "github.com/crystal-lang/crystal-db.git",
+      "git": {
+        "commitObject": {
+          "gitlinks": [],
+          "object": "dHJlZSA5NDdjZTkxOWE0OGZjOGZhYTAxZDEwYTZlMWZhZGZmZmQ2ZGRlMzY5CnBhcmVudCAyNjg5NmYxYWRlYjU5YWQ5NDcyYWNhMzNiYTgxYTRlNjg3ODY3NTJkCmF1dGhvciBHZW9yZ2UgRGlldHJpY2ggPGRldkBkaWV0cmljaC5wdWI+IDE3OTEyOTExODUgLTA0MDAKY29tbWl0dGVyIEdpdEh1YiA8bm9yZXBseUBnaXRodWIuY29tPiAxNzkxMjkxMTg1IC0wNDAwCmdwZ3NpZyAtLS0tLUJFR0lOIFBHUCBTSUdOQVRVUkUtLS0tLQogCiB3c0ZjQkFBQkNBQVFCUUpxeE84eENSQzFhUTd1dTVVaGxBQUE5MmtRQUR1OG9xN2w0d0pPaUpmM2UwWGorTis0CiBUMzQ1eDJWcjViM3IvNnU5clNsVGVURjJXNlVrekdHUDdwRVU0YVh2bmp5bC93YVRhcUhadWlpeEdVL20wbGNICiA4RzdoRnJrL2J1ME1jOTlpcTUyZFgxeXpHUDA3V2dybS9FL0w3NkVYVmtKSUczM05ZcEcwMnExU29RcDU5N3hECiBaTjRUU0NmcG5uNzFzbXExb3NrYnJQbDFwWXVXQlhaQ0lPSGpwaHJveXN5TzI4ZExrNkdPUHlvWmhFcWkwU0Y1CiBJcUxFSU9QOGc2b1c2Uk9rZkpCTXlUbFRqSjBpaVhuQXorSVRhWTczRWJ3QkJIYkd0R1hXd1ZONXRoU1dWRjdNCiBVZW9QWTlBeCtLR1JMQU1PREgxcmJYcHFvbVlldzZwek52N0czYXRoeW0zY0lWSkh4cWlmdUs2bWVhbjhhTXhQCiBubkQ0aDRLMVhDeXA3MlJoVkZUV1E3d1V5VjRPQ3NpRWdrTWlhaXZTdThYRTRBYS8rL010M0c2ZzB4aGp3UTlxCiBNa2wrakJRWVQ0SVcxU2lvY3BEa0tvOE5saGpva05NeGpKbWNFdnM3aWxZTndpM3FrSnZ5K3htVVF5QVk4S3pICiBLdlFnbjV5d0l4UXp1VFIvaGpoaFRVaUdkUkErMG1KbjlndC9aRTI1dHp4eEFISUlVaVJhSTArV1lKeFkwNUFJCiBHNjQ4SnJ2L2xjdml2dXlLYUsxYW9IMklwRyt6djVBS2FNYkx6MmNoYkpKN0o4OHZsMVQ4TTh0NXR5d09zK1hHCiB5Zkl6dDhlTld6Ry9UT0hmU1RGT1BjbVlHSVNOYkRqRkFLOTlWNDRQYndnRHBhd3EvTHNVMytERDVCSmdibUE0CiBGUVRZck9BOGkxM2hLTFlaczQrVwogPTZ0KzAKIC0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQogCgpSZWxlYXNlIGAwLjE1LjBgICgjMjM0KQ=="
+        },
+        "leaveDotGit": true,
+        "rev": "ec7b045b3e2cf5962c029bf676f238f812f40872",
+        "submodules": false,
+        "url": "https://github.com/crystal-lang/crystal-db.git"
+      },
+      "hash": "sha256-Nq/No5quVmxfIxLGu8Ak6698pL2xOhrLzLYhrdffubg=",
+      "name": "db",
+      "version": "0.15.0+git.commit.ec7b045b3e2cf5962c029bf676f238f812f40872"
+    }
+  ],
+  "inputs": [
+    {
+      "hash": "8264b76a6fc7020aaae84327f45cb0c57e51c7e9ad2332cb67c5e03de6b6ed50",
+      "path": "shard.yml"
+    },
+    {
+      "hash": null,
+      "path": "shard.override.yml"
+    }
+  ],
+  "manifest": "name: locked_crystal\nversion: 0.1.0\ndependencies:\n  db:\n    github: crystal-lang/crystal-db\n    version: ~> 0.15.0\ntargets:\n  hello:\n    main: src/main.cr\n",
+  "nativeHash": "f5dbb3a5f59031a6c9e950412026d3b0f65bb2ecec68d5163eb6e6eafe774674",
+  "nativeLock": "version: \"2.0\"\nshards:\n  \"db\":\n    git: \"https://github.com/crystal-lang/crystal-db.git\"\n    version: \"0.15.0+git.commit.ec7b045b3e2cf5962c029bf676f238f812f40872\"\n",
+  "targets": [
+    "hello"
+  ],
+  "toolVersions": {
+    "crystal": "1.21.1",
+    "resolver": "d5489b502d8e2ead2802bc088b0ad1e2ddb86c7b6bc73a2ecb44afced26007b1",
+    "shards": "0.20.0"
+  },
+  "version": 1
+}

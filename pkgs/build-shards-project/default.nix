@@ -11,6 +11,9 @@
   purifier,
   gnutar,
   gzip,
+  binutils,
+  stdenv,
+  boehmgc,
 }:
 {
   src,
@@ -19,6 +22,7 @@
   fetchers ? { },
   buildTargets ? null,
   test ? true,
+  nativeLibraries ? { },
   nativeBuildInputs ? [ ],
   srcFilter ?
     path: type:
@@ -53,6 +57,45 @@ let
     filter = srcFilter;
   };
   targets = if buildTargets == null then lock.data.targets else buildTargets;
+  relative =
+    value:
+    builtins.isString value
+    && value != ""
+    && !lib.hasPrefix "/" value
+    && builtins.all (
+      part:
+      !(builtins.elem part [
+        ""
+        "."
+        ".."
+      ])
+    ) (lib.splitString "/" value);
+  symbol = value: builtins.isString value && builtins.match "[A-Za-z_][A-Za-z0-9_]*" value != null;
+  validNative =
+    name: spec:
+    symbol name
+    && builtins.isAttrs spec
+    &&
+      builtins.attrNames (
+        removeAttrs spec [
+          "source"
+          "header"
+          "exports"
+          "initialize"
+          "defines"
+        ]
+      ) == [ ]
+    && relative (spec.source or null)
+    && lib.hasSuffix ".cr" spec.source
+    && relative (spec.header or null)
+    && symbol (spec.initialize or null)
+    && builtins.isList (spec.exports or null)
+    && spec.exports != [ ]
+    && lib.all symbol spec.exports
+    && builtins.elem spec.initialize spec.exports
+    && builtins.isList (spec.defines or [ ])
+    && lib.all symbol (spec.defines or [ ]);
+  nativeSpecifications = writeText "crystal-native-libraries.json" (builtins.toJSON nativeLibraries);
   project =
     runCommand "purified-shards-project"
       {
@@ -82,10 +125,31 @@ let
           "${nativeShards}/bin/shards --frozen --local build " + lib.escapeShellArgs targets
         )}
         ${lib.optionalString test "if [ -d spec ]; then ${crystal}/bin/crystal spec; fi"}
+        ${lib.optionalString (nativeLibraries != { }) ''
+          python3 ${./native-products.py} "$PWD" "$out" ${source} ${environment} \
+            ${crystal}/bin/crystal ${binutils}/bin/nm ${stdenv.hostPlatform.system} ${nativeSpecifications} \
+            ${stdenv.cc}/bin/cc ${lib.getBin stdenv.cc.libc}/bin/ldd \
+            ${crystal.lib}/crystal ${crystal.bin}/bin/crystal ${boehmgc}/lib
+        ''}
         mkdir -p "$out/share/shards"
         cp -r . "$out/share/shards/"
         ln -s ${environment}/lib "$out/share/shards/lib"
       '';
+  projections = lib.optionalAttrs (nativeLibraries != { }) (
+    purifier.nativeProjections {
+      producer = project;
+      libraries = lib.mapAttrs (name: _: "lib/lib${name}.so") nativeLibraries;
+      includeDirectories = lib.mapAttrsToList (name: _: "include/${name}") nativeLibraries;
+      targetMetadata = lib.mapAttrs (_: spec: {
+        abi = "c";
+        inherit (spec) source exports initialize;
+        toolVersions = lock.data.toolVersions;
+        runtimeContract = "Caller-authored initialization; same native thread; process-lifetime load";
+      }) nativeLibraries;
+      system = stdenv.hostPlatform.system;
+      inherit runCommand python3;
+    }
+  );
   release =
     assert lock.problems == [ ];
     runCommand "shards-project-release"
@@ -104,12 +168,22 @@ let
         tar --sort=name --mtime=@1 --owner=0 --group=0 --numeric-owner -C source -cf - . | gzip -n > "$out/project.tar.gz"
       '';
 in
+assert lib.assertMsg
+  (lib.all (name: validNative name nativeLibraries.${name}) (builtins.attrNames nativeLibraries))
+  "Crystal native libraries require source, authored header, exports including initialize, and optional defines";
+assert lib.assertMsg (
+  nativeLibraries == { }
+  || (
+    lock.data.toolVersions.crystal == crystal.version
+    && lock.data.toolVersions.shards == nativeShards.version
+  )
+) "Crystal native SDK changed; run shards-purifier lock --update";
 {
   packages = {
     inherit project environment;
     default = project;
   };
   tests = project;
-  inherit release;
+  inherit release projections;
   fetches = lock.entries;
 }
