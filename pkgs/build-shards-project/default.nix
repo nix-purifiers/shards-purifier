@@ -13,6 +13,7 @@
   gzip,
   binutils,
   stdenv,
+  boehmgc,
 }:
 {
   src,
@@ -127,7 +128,8 @@ let
         ${lib.optionalString (nativeLibraries != { }) ''
           python3 ${./native-products.py} "$PWD" "$out" ${source} ${environment} \
             ${crystal}/bin/crystal ${binutils}/bin/nm ${stdenv.hostPlatform.system} ${nativeSpecifications} \
-            ${stdenv.cc}/bin/cc ${lib.getBin stdenv.cc.libc}/bin/ldd
+            ${stdenv.cc}/bin/cc ${lib.getBin stdenv.cc.libc}/bin/ldd \
+            ${crystal.lib}/crystal ${crystal.bin}/bin/crystal ${boehmgc}/lib
         ''}
         mkdir -p "$out/share/shards"
         cp -r . "$out/share/shards/"

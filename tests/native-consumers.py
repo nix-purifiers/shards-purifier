@@ -5,11 +5,32 @@ import subprocess
 import sys
 
 projection, expected = Path(sys.argv[1]), int(sys.argv[2])
+proof = json.loads(Path(sys.argv[3]).read_text())
 sys.path.insert(0, str(projection))
 import purifier_native
 
 library = json.loads((projection / "catalog.json").read_text())["libraries"]["answer"]
 handle = purifier_native.load("answer")
+class DlInfo(ctypes.Structure):
+    _fields_ = [("filename", ctypes.c_char_p), ("base", ctypes.c_void_p),
+                ("symbol", ctypes.c_char_p), ("address", ctypes.c_void_p)]
+
+dladdr = ctypes.CDLL(None).dladdr
+dladdr.argtypes = [ctypes.c_void_p, ctypes.POINTER(DlInfo)]
+dladdr.restype = ctypes.c_int
+origins = {}
+for symbol in ["answer_init", "native_answer", "__crystal_main", "GC_malloc"]:
+    info = DlInfo()
+    assert dladdr(ctypes.cast(getattr(handle, symbol), ctypes.c_void_p), ctypes.byref(info))
+    origin = Path(info.filename.decode()).resolve(strict=True)
+    if symbol == "GC_malloc":
+        assert origin.is_relative_to(Path(proof["selectedGcRoot"]).resolve())
+        import hashlib
+        assert hashlib.sha256(origin.read_bytes()).hexdigest() == proof["libraries"]["answer"]["linkedLibraries"][str(origin)]
+    else:
+        assert origin == Path(library).resolve()
+    origins[symbol] = str(origin)
+print("Actual Crystal ABI/runtime/GC physical origins", json.dumps(origins, sort_keys=True))
 handle.answer_init.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
 handle.answer_init.restype = ctypes.c_int
 argv = (ctypes.c_char_p * 2)(b"crystal-ctypes", None)

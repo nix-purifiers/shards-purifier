@@ -31,14 +31,14 @@ pkgs.runCommand "crystal-native-abi-consumers"
     passthru = { inherit built producer projection; };
   }
   ''
-    mkdir "$out"
-    test "$(${producer}/bin/hello)" = 'Locked Crystal dependencies'
-    cc ${./native-consumer.c} -DEXPECTED=${toString expected} \
-      -I${producer}/include/answer ${producer}/lib/libanswer.so -o consume
-    ./consume
-    python ${./native-consumers.py} ${projection} ${toString expected}
-    cp ${./NativeAnswer.java} NativeAnswer.java
-    javac --enable-preview --release 21 NativeAnswer.java
-    java @${built.projections.java-ffi}/java.args --enable-preview --enable-native-access=ALL-UNNAMED NativeAnswer ${toString expected}
-    cp ${producer}/nix-support/crystal-native/verified-libraries.json "$out/"
+      mkdir "$out"
+      test "$(${producer}/bin/hello)" = 'Locked Crystal dependencies'
+      cc ${./native-consumer.c} -DEXPECTED=${toString expected} \
+        -I${producer}/include/answer ${producer}/lib/libanswer.so -o consume
+      ./consume
+    python ${./native-consumers.py} ${projection} ${toString expected} ${producer}/nix-support/crystal-native/verified-libraries.json
+      cp ${./NativeAnswer.java} NativeAnswer.java
+      javac --enable-preview --release 21 NativeAnswer.java
+      java @${built.projections.java-ffi}/java.args --enable-preview --enable-native-access=ALL-UNNAMED NativeAnswer ${toString expected}
+      cp ${producer}/nix-support/crystal-native/verified-libraries.json "$out/"
   ''

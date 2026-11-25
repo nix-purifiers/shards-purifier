@@ -11,7 +11,8 @@ class NativeAnswer {
       FunctionDescriptor.of(JAVA_INT, JAVA_INT));
     var collect = linker.downcallHandle(lookup.find("answer_collect").orElseThrow(),
       FunctionDescriptor.ofVoid());
-    try (var arena = Arena.ofConfined()) {
+    {
+      var arena = Arena.global();
       var name = arena.allocateUtf8String("crystal-java");
       var argv = arena.allocate(ADDRESS, 2);
       argv.setAtIndex(ADDRESS, 0, name);

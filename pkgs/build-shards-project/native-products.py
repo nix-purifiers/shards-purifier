@@ -18,14 +18,16 @@ def run(command):
 
 
 project, output, original, environment = map(Path, sys.argv[1:5])
-compiler, nm, system, specifications, cc, ldd = sys.argv[5:]
+compiler, nm, system, specifications, cc, ldd, selected_stdlib, selected_compiler, selected_gc = sys.argv[5:]
 project, output, original, environment = (
     path.resolve() for path in (project, output, original, environment)
 )
 specs = json.loads(Path(specifications).read_text())
 native_path = run([compiler, "env", "CRYSTAL_PATH"]).strip().split(os.pathsep)
-sdk_roots = [Path(path).resolve() for path in native_path
-             if path and Path(path).is_absolute() and not Path(path).resolve().is_relative_to(environment)]
+sdk_roots = [Path(selected_stdlib).resolve(strict=True)]
+reported_sdk_roots = [Path(path).resolve() for path in native_path
+                      if path and Path(path).is_absolute() and not Path(path).resolve().is_relative_to(environment)]
+assert reported_sdk_roots == sdk_roots, "Native compiler reported a foreign standard library"
 assert sdk_roots and all(str(path).startswith("/nix/store/") for path in sdk_roots), "Unowned Crystal standard library"
 native_library_roots = [Path(path).resolve() for path in run([compiler, "env", "CRYSTAL_LIBRARY_PATH"]).strip().split(os.pathsep) if path]
 dependency_roots = [environment]
@@ -34,6 +36,7 @@ for folder in (environment / "lib", environment / "sources"):
         dependency_roots.extend(path.resolve() for path in folder.iterdir() if path.is_dir())
 compiler_exec = Path(run([compiler, "env", "CRYSTAL_EXEC_PATH"]).strip()) / "crystal"
 assert compiler_exec.is_file(), "Missing selected native Crystal compiler"
+assert compiler_exec.resolve() == Path(selected_compiler).resolve(strict=True), "Foreign native Crystal compiler"
 support = output / "nix-support/crystal-native"
 support.mkdir(parents=True)
 records = {}
@@ -98,7 +101,7 @@ for name, spec in specs.items():
             assert str(path).startswith("/nix/store/"), "Foreign native runtime dependency"
             linked[str(path)] = sha(path)
             if path.name.startswith("libgc.so"):
-                assert any(path.is_relative_to(root) for root in native_library_roots), "Foreign Crystal GC dependency"
+                assert path.is_relative_to(Path(selected_gc).resolve(strict=True)), "Foreign Crystal GC dependency"
     installed_header = output / "include" / name / header.name
     installed_header.parent.mkdir(parents=True)
     shutil.copy2(header, installed_header)
@@ -121,4 +124,5 @@ post_build = {relative: sha(project / relative) if (project / relative).is_file(
 (support / "verified-libraries.json").write_text(json.dumps({
     "libraries": records, "authoredInputs": authored, "postBuildInputs": post_build,
     "nativeCompilerPath": compiler, "sdkRoots": list(map(str, sdk_roots))
+    , "selectedGcRoot": selected_gc
 }, indent=2, sort_keys=True) + "\n")
