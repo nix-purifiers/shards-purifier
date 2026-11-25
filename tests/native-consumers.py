@@ -19,7 +19,7 @@ dladdr = ctypes.CDLL(None).dladdr
 dladdr.argtypes = [ctypes.c_void_p, ctypes.POINTER(DlInfo)]
 dladdr.restype = ctypes.c_int
 origins = {}
-for symbol in ["answer_init", "native_answer", "__crystal_main", "GC_malloc"]:
+for symbol in ["answer_init", "native_answer", "answer_collect", "GC_malloc"]:
     info = DlInfo()
     assert dladdr(ctypes.cast(getattr(handle, symbol), ctypes.c_void_p), ctypes.byref(info))
     origin = Path(info.filename.decode()).resolve(strict=True)
