@@ -29,7 +29,6 @@ reported_sdk_roots = [Path(path).resolve() for path in native_path
                       if path and Path(path).is_absolute() and not Path(path).resolve().is_relative_to(environment)]
 assert reported_sdk_roots == sdk_roots, "Native compiler reported a foreign standard library"
 assert sdk_roots and all(str(path).startswith("/nix/store/") for path in sdk_roots), "Unowned Crystal standard library"
-native_library_roots = [Path(path).resolve() for path in run([compiler, "env", "CRYSTAL_LIBRARY_PATH"]).strip().split(os.pathsep) if path]
 dependency_roots = [environment]
 for folder in (environment / "lib", environment / "sources"):
     if folder.is_dir():
@@ -83,7 +82,8 @@ for name, spec in specs.items():
     native_build = run(command)
     (support / (name + "-build.txt")).write_text(native_build)
     elf = library.read_bytes()
-    assert elf[:4] == b"\x7fELF" and struct.unpack_from("<H" if elf[5] == 1 else ">H", elf, 18)[0] == {
+    assert elf[:5] == b"\x7fELF\x02" and struct.unpack_from("<H" if elf[5] == 1 else ">H", elf, 16)[0] == 3, "Expected a native 64-bit shared library"
+    assert struct.unpack_from("<H" if elf[5] == 1 else ">H", elf, 18)[0] == {
         "x86_64-linux": 62, "aarch64-linux": 183
     }[system], "Foreign native library architecture"
     symbols = run([nm, "-D", "--defined-only", library])
@@ -123,6 +123,7 @@ post_build = {relative: sha(project / relative) if (project / relative).is_file(
               for relative in authored}
 (support / "verified-libraries.json").write_text(json.dumps({
     "libraries": records, "authoredInputs": authored, "postBuildInputs": post_build,
-    "nativeCompilerPath": compiler, "sdkRoots": list(map(str, sdk_roots))
-    , "selectedGcRoot": selected_gc
+    "nativeCompilerPath": compiler, "sdkRoots": list(map(str, sdk_roots)),
+    "selectedGcRoot": selected_gc, "nativeTools": {"nm": nm, "cc": cc, "ldd": ldd,
+                                                   "compilerExecutable": selected_compiler}
 }, indent=2, sort_keys=True) + "\n")
