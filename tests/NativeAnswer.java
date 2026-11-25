@@ -14,7 +14,7 @@ class NativeAnswer {
     {
       var arena = Arena.global();
       var name = arena.allocateUtf8String("crystal-java");
-      var argv = arena.allocate(ADDRESS, 2);
+      var argv = arena.allocate(2 * ADDRESS.byteSize(), ADDRESS.byteAlignment());
       argv.setAtIndex(ADDRESS, 0, name);
       argv.setAtIndex(ADDRESS, 1, MemorySegment.NULL);
       if ((int)init.invokeExact(1, argv) != 0) throw new AssertionError();
