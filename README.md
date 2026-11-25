@@ -2,6 +2,52 @@
 
 Locked, Nix-resolved dependencies for Crystal's Shards.
 
+## Native C ABI libraries
+
+Opt in to compiling a caller-authored C ABI entry point with the selected Crystal
+compiler and the project's existing locked Shards dependency environment:
+
+```nix
+let built = pkgs.shards-purifier.buildShardsProject {
+  src = ./.;
+  nativeLibraries.answer = {
+    source = "src/native.cr";
+    header = "native-answer.h";
+    initialize = "answer_init";
+    exports = [ "answer_init" "native_answer" ];
+    # defines = [ "my_feature" ];
+  };
+}; in built.projections.python-ffi
+```
+
+The builder preserves normal Shards application targets and tests, then compiles
+`lib/libanswer.so` with the original compiler's `--single-module` and shared-link
+options. It installs the unchanged authored header in `include/answer` and exposes
+`projections.native`, `projections.python-ffi`, and `projections.java-ffi`. The native
+catalog retains the source, export, initializer, and captured tool-version metadata.
+
+The compiler's own dependency tool runs with the same defines and reports its
+require graph, including the standard library (which it normally filters out).
+Required files must belong to the staged project, locked dependency environment,
+or selected native standard library. The builder retains their hashes, compiler
+identity, original and post-build input hashes, dynamic symbols, and resolved
+runtime library paths and hashes in `nix-support/crystal-native`. It checks the
+original runtime/prelude origins, native architecture, callable exports, header
+export declarations, and installed header bytes. The header's ABI types and any
+foreign-code behavior remain the application's responsibility.
+
+The caller must initialize the runtime exactly once before calling allocating
+exports, on the same native thread used for subsequent calls, and keep the library
+loaded for the process lifetime. The authored initializer can use the original
+`GC.init`, `Crystal.init_runtime`, and `Crystal.main_user_code(argc, argv)` routines.
+Do not let Crystal exceptions cross the C boundary. This interface does not transfer
+Crystal objects across the boundary: use caller-owned scalar/buffer interfaces and
+explicit ownership rules for any application-defined allocations. No arbitrary
+foreign-thread, unload/reload, or universal Crystal embedding guarantee is implied.
+
+The native examples exercise actual `DB::Error` allocations from the locked shard,
+forced GC, and C/Python ctypes-CFFI/JDK21 FFM consumers across two source revisions.
+
 ## Quickstart
 
 From a project with `shard.yml`:

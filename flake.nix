@@ -47,7 +47,9 @@
             nixpkgsSrc = nixpkgs;
             purifierSrc = purifier;
           };
-          buildShardsProject = scope.callPackage ./pkgs/build-shards-project/default.nix { purifier = shared final.lib; };
+          buildShardsProject = scope.callPackage ./pkgs/build-shards-project/default.nix {
+            purifier = shared final.lib;
+          };
         });
       };
       pkgsFor =
