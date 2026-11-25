@@ -1,5 +1,6 @@
 import ctypes
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -10,7 +11,7 @@ sys.path.insert(0, str(projection))
 import purifier_native
 
 library = json.loads((projection / "catalog.json").read_text())["libraries"]["answer"]
-handle = purifier_native.load("answer")
+handle = purifier_native.load("answer", mode=os.RTLD_NOW | os.RTLD_NODELETE)
 class DlInfo(ctypes.Structure):
     _fields_ = [("filename", ctypes.c_char_p), ("base", ctypes.c_void_p),
                 ("symbol", ctypes.c_char_p), ("address", ctypes.c_void_p)]
@@ -43,13 +44,17 @@ for value in [*range(100), 0xffffffff]:
     assert handle.native_answer(value) == (value + expected) % (1 << 32)
     handle.answer_collect()
 program = '''from cffi import FFI
+import os
+from pathlib import Path
 f=FFI(); f.cdef("int answer_init(int,char **); uint32_t native_answer(uint32_t); void answer_collect(void);")
-lib=f.dlopen(LIBRARY)
+lib=f.dlopen(LIBRARY, flags=os.RTLD_NOW | os.RTLD_NODELETE)
 name=f.new("char[]",b"crystal-cffi"); argv=f.new("char *[]",[name,f.NULL])
 assert lib.answer_init(1,argv)==0
 for value in [*range(100),0xffffffff]:
  assert lib.native_answer(value)==(value+EXPECTED) % (1<<32)
  lib.answer_collect()
+f.dlclose(lib)
+assert str(Path(LIBRARY).resolve()) in Path("/proc/self/maps").read_text()
 print("Actual Crystal CFFI100/GC/overflow PASS")
 '''
 subprocess.run([sys.executable, "-c", "LIBRARY=" + repr(library) + "\nEXPECTED=" + str(expected) + "\n" + program], check=True)

@@ -41,6 +41,8 @@ exports, on the same native thread used for subsequent calls, and keep the libra
 loaded for the process lifetime. The authored initializer can use the original
 `GC.init`, `Crystal.init_runtime`, and `Crystal.main_user_code(argc, argv)` routines.
 Keep the initializer's argument-vector storage alive for the process lifetime.
+The Linux Python examples load with `RTLD_NODELETE` to enforce that lifetime;
+the CFFI check explicitly closes its handle and confirms the library remains mapped.
 Do not let Crystal exceptions cross the C boundary. This interface does not transfer
 Crystal objects across the boundary: use caller-owned scalar/buffer interfaces and
 explicit ownership rules for any application-defined allocations. No arbitrary
